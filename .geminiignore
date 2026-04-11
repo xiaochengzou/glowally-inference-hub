@@ -1,0 +1,8 @@
+# Exclude large or sensitive directories from Gemini CLI scanning
+node_modules/
+dist/
+build/
+coverage/
+.git/
+.env*
+*.log

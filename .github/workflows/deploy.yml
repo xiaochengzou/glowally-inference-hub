@@ -1,0 +1,56 @@
+name: Deploy to GKE
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: glowally-vllm
+  GKE_CLUSTER: vllm-l4-cluster
+  GKE_ZONE: us-central1
+  WORKLOAD_IDENTITY_PROVIDER: projects/612105008011/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+  SERVICE_ACCOUNT: github-actions@glowally-vllm.iam.gserviceaccount.com
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Configure Workload Identity Federation and generate an access token.
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v2'
+      with:
+        token_format: 'access_token'
+        workload_identity_provider: '${{ env.WORKLOAD_IDENTITY_PROVIDER }}'
+        service_account: '${{ env.SERVICE_ACCOUNT }}'
+
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v2'
+
+    - name: 'Get GKE Credentials'
+      uses: 'google-github-actions/get-gke-credentials@v2'
+      with:
+        cluster_name: '${{ env.GKE_CLUSTER }}'
+        location: '${{ env.GKE_ZONE }}'
+
+    # Inject the HF_TOKEN into the K8s secret before applying
+    - name: 'Inject Secrets'
+      run: |
+        echo "hf_token=${{ secrets.HF_TOKEN }}" > k8s/base/secret.env
+
+    # Deploy the Docker image to the GKE cluster
+    - name: Deploy
+      run: |
+        kubectl apply -k k8s/overlays/gke
+        kubectl rollout status deployment/vllm-server

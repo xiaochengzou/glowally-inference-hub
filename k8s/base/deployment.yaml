@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-server
+  labels:
+    app: vllm-server
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate  # This kills the old pod first, freeing the GPU for the new one
+  selector:
+    matchLabels:
+      app: vllm-server
+  template:
+    metadata:
+      labels:
+        app: vllm-server
+    spec:
+      # 1. SHARED STORAGE: Temporary folder for adapters
+      volumes:
+      - name: lora-storage
+        emptyDir: {}
+
+      # 2. DOWNLOADER: Pulls the adapter weights before vLLM starts
+      initContainers:
+      - name: lora-downloader
+        image: python:3.9-slim
+        env:
+        - name: HF_TOKEN  # Standard variable name for HF library
+          valueFrom:
+            secretKeyRef:
+              name: hf-token-secret
+              key: hf_token
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            pip install huggingface_hub
+            # The library automatically uses the HF_TOKEN env var
+            python -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='vindows/qwen2.5-7b-text-to-sql', local_dir='/data/sql-lora')"
+        volumeMounts:
+        - name: lora-storage
+          mountPath: /data
+
+      containers:
+      - name: vllm-engine
+        image: vllm/vllm-openai:latest
+        args: [
+          "--model", "Qwen/Qwen2.5-7B-Instruct",
+          "--gpu-memory-utilization", "0.7", # Lowered to provide VRAM for adapters
+          "--max-model-len", "4096",
+          "--enable-lora", # Required for multi-adapter support
+          "--lora-modules", "sql-expert=/data/sql-lora", # Maps friendly name to path
+          "--max-loras", "1",
+          "--max-lora-rank", "16",
+          "--enforce-eager"
+        ]
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+            cpu: "4"
+            memory: "16Gi"
+          requests:
+            cpu: "4"
+            memory: "16Gi"
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - name: lora-storage
+          mountPath: /data
+        ports:
+        - containerPort: 8000
+      
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "sku"
+        operator: "Equal"
+        value: "gpu"
+        effect: "NoSchedule"

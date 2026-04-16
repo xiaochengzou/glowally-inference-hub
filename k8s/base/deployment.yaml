@@ -31,12 +31,48 @@ spec:
             secretKeyRef:
               name: hf-token-secret
               key: hf_token
-        command: ["/bin/sh", "-c"]
+        command: ["/bin/bash", "-c"]
         args:
           - |
-            pip install huggingface_hub
-            # The library automatically uses the HF_TOKEN env var
-            python -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='vindows/qwen2.5-7b-text-to-sql', local_dir='/data/sql-lora')"
+            set -e
+
+            echo "=== [1/4] Python version ==="
+            python --version
+
+            echo "=== [2/4] Installing huggingface_hub ==="
+            pip install huggingface_hub --quiet
+
+            echo "=== [3/4] Checking HF token ==="
+            if [ -z "$HF_TOKEN" ]; then
+              echo "ERROR: HF_TOKEN is empty or not set!"
+              exit 1
+            else
+              echo "HF_TOKEN is set (starts with: ${HF_TOKEN:0:8}...)"
+            fi
+
+            echo "=== [4/4] Downloading LoRA adapter ==="
+            python -c "
+            import os
+            from huggingface_hub import snapshot_download
+
+            print('Authenticating with HF token...')
+            token = os.environ.get('HF_TOKEN')
+
+            print('Starting download of vindows/qwen2.5-7b-text-to-sql...')
+            path = snapshot_download(
+                repo_id='vindows/qwen2.5-7b-text-to-sql',
+                local_dir='/data/sql-lora',
+                token=token
+            )
+            print(f'Download complete. Files saved to: {path}')
+
+            files = list(os.walk('/data/sql-lora'))
+            print(f'Total directories: {len(files)}')
+            total_files = sum(len(f) for _, _, f in files)
+            print(f'Total files: {total_files}')
+            "
+
+            echo "=== DONE ==="
         volumeMounts:
         - name: lora-storage
           mountPath: /data

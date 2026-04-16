@@ -1,0 +1,98 @@
+{
+  "title": "vLLM Server (Qwen2.5-7B + SQL LoRA)",
+  "uid": "vllm-overview",
+  "refresh": "30s",
+  "schemaVersion": 36,
+  "version": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Running Requests",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "refId": "A",
+        "metricType": "prometheus.googleapis.com/vllm:num_requests_running/gauge",
+        "metricKind": "GAUGE",
+        "valueType": "DOUBLE"
+      }]
+    },
+    {
+      "id": 2,
+      "title": "Waiting Requests (Queue Depth)",
+      "type": "stat",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "refId": "A",
+        "metricType": "prometheus.googleapis.com/vllm:num_requests_waiting/gauge",
+        "metricKind": "GAUGE",
+        "valueType": "DOUBLE"
+      }]
+    },
+    {
+      "id": 3,
+      "title": "GPU KV Cache Utilization",
+      "type": "gauge",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "minVizValue": 0,
+        "maxVizValue": 1
+      },
+      "targets": [{
+        "refId": "A",
+        "metricType": "prometheus.googleapis.com/vllm:gpu_cache_usage_perc/gauge",
+        "metricKind": "GAUGE",
+        "valueType": "DOUBLE"
+      }]
+    },
+    {
+      "id": 4,
+      "title": "Tokens Generated per Second",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "targets": [{
+        "refId": "A",
+        "metricType": "prometheus.googleapis.com/vllm:generation_tokens_total/counter",
+        "metricKind": "CUMULATIVE",
+        "valueType": "DOUBLE"
+      }]
+    },
+    {
+      "id": 5,
+      "title": "Time to First Token (ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "targets": [{
+        "refId": "A",
+        "metricType": "prometheus.googleapis.com/vllm:time_to_first_token_seconds/histogram",
+        "metricKind": "CUMULATIVE",
+        "valueType": "DISTRIBUTION"
+      }]
+    },
+    {
+      "id": 6,
+      "title": "Request Throughput (req/s)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "targets": [{
+        "refId": "A",
+        "metricType": "prometheus.googleapis.com/vllm:request_success_total/counter",
+        "metricKind": "CUMULATIVE",
+        "valueType": "DOUBLE"
+      }]
+    },
+    {
+      "id": 7,
+      "title": "Inter-Token Latency (ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "targets": [{
+        "refId": "A",
+        "metricType": "prometheus.googleapis.com/vllm:time_per_output_token_seconds/histogram",
+        "metricKind": "CUMULATIVE",
+        "valueType": "DISTRIBUTION"
+      }]
+    }
+  ]
+}

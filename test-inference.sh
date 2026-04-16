@@ -5,45 +5,67 @@ SERVICE_NAME="vllm-lb-service"
 LORA_MODEL_NAME="sql-expert"
 BASE_MODEL_NAME="Qwen/Qwen2.5-7B-Instruct"
 
-echo "🔍 [1/4] Detecting LoadBalancer IP..."
+echo "🔍 [1/6] Detecting LoadBalancer IP..."
 EXTERNAL_IP=$(kubectl get svc $SERVICE_NAME -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
-# Handle cases where hostname is used instead of IP (e.g., on AWS or some local clusters)
+# Handle cases where hostname is used instead of IP
 if [ -z "$EXTERNAL_IP" ]; then
     EXTERNAL_IP=$(kubectl get svc $SERVICE_NAME -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 fi
 
 if [ -z "$EXTERNAL_IP" ] || [ "$EXTERNAL_IP" == "<pending>" ]; then
-    echo "⚠️  External IP is still pending or not found."
-    echo "💡 Using 'localhost:8000' (Assumes port-forward is running: kubectl port-forward svc/$SERVICE_NAME 8000:80)"
-    ENDPOINT="http://localhost:8000"
-else
-    echo "✅ Found External IP: $EXTERNAL_IP"
-    ENDPOINT="http://$EXTERNAL_IP"
+    echo "❌ ERROR: External IP is not available yet (currently: $EXTERNAL_IP)."
+    echo "Please wait a few minutes for GCP to provision the LoadBalancer or check status with:"
+    echo "kubectl get svc $SERVICE_NAME"
+    exit 1
 fi
 
-echo -e "\n📡 [2/4] Verifying available models at $ENDPOINT/v1/models..."
+echo "✅ Found External IP: $EXTERNAL_IP"
+ENDPOINT="http://$EXTERNAL_IP"
+
+echo -e "\n📡 [2/6] Verifying available models..."
 curl -s "$ENDPOINT/v1/models" | jq .
 
-echo -e "\n🤖 [3/4] Testing BASE MODEL ($BASE_MODEL_NAME)..."
+echo -e "\n🤖 [3/6] Test: Base Model General Knowledge..."
 curl -s -X POST "$ENDPOINT/v1/chat/completions" \
   -H "Content-Type: application/json" \
   -d "{
     \"model\": \"$BASE_MODEL_NAME\",
-    \"messages\": [{\"role\": \"user\", \"content\": \"Hello, what model are you?\"}],
-    \"max_tokens\": 50
+    \"messages\": [{\"role\": \"user\", \"content\": \"What are the three laws of robotics?\"}],
+    \"max_tokens\": 100
   }" | jq .choices[0].message.content
 
-echo -e "\n🎯 [4/4] Testing LORA ADAPTER ($LORA_MODEL_NAME)..."
+echo -e "\n🎯 [4/6] Test: LoRA Adapter Simple SQL..."
 curl -s -X POST "$ENDPOINT/v1/chat/completions" \
   -H "Content-Type: application/json" \
   -d "{
     \"model\": \"$LORA_MODEL_NAME\",
     \"messages\": [
-      {\"role\": \"system\", \"content\": \"You are a SQL expert.\"},
-      {\"role\": \"user\", \"content\": \"Write a SQL query to find all users who signed up in the last 30 days.\"}
+      {\"role\": \"user\", \"content\": \"Table 'orders' has columns: id, amount, status. Write a query for completed orders > 100.\"}
     ],
     \"max_tokens\": 100
   }" | jq .choices[0].message.content
 
-echo -e "\n✅ Tests completed."
+echo -e "\n🧠 [5/6] Test: LoRA Adapter Complex Schema..."
+curl -s -X POST "$ENDPOINT/v1/chat/completions" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"model\": \"$LORA_MODEL_NAME\",
+    \"messages\": [
+      {\"role\": \"system\", \"content\": \"You are a SQL expert. Use JOINs where appropriate.\"},
+      {\"role\": \"user\", \"content\": \"Schema: users(id, name), posts(id, author_id, title, views). Task: Find the names of authors who have posts with more than 1000 views.\"}
+    ],
+    \"temperature\": 0
+  }" | jq .choices[0].message.content
+
+echo -e "\n🌊 [6/6] Test: Streaming Output (LoRA)..."
+curl -s -X POST "$ENDPOINT/v1/chat/completions" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"model\": \"$LORA_MODEL_NAME\",
+    \"messages\": [{\"role\": \"user\", \"content\": \"List all SQL constraints and explain them briefly.\"}],
+    \"stream\": true,
+    \"max_tokens\": 150
+  }" | head -n 20
+
+echo -e "\n✅ All tests completed."

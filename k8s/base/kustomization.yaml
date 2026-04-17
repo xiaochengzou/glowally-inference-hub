@@ -30,3 +30,35 @@ configMapGenerator:
   - name: grafana-dashboards
     files:
       - grafana/dashboards/vllm.json
+      apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # vLLM
+  - deployment.yaml
+  - service.yaml
+  - monitoring.yaml
+  # Grafana
+  - grafana/deployment.yaml
+  # KEDA — uncomment to enable auto-scaling
+  # - keda/scaled-object.yaml
+
+secretGenerator:
+  - name: hf-token-secret
+    envs:
+      - secret.env
+
+generatorOptions:
+  disableNameSuffixHash: true  # Keeps names predictable — no hash suffix added
+
+configMapGenerator:
+  - name: grafana-datasources
+    files:
+      - grafana/datasources.yaml
+  - name: grafana-dashboard-providers
+    files:
+      - grafana/dashboard-provider.yaml
+  - name: grafana-dashboards
+    files:
+      - grafana/dashboards/vllm.json
+      - grafana/dashboards/gpu-hardware.json

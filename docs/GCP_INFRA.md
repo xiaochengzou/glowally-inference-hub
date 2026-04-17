@@ -22,6 +22,8 @@ Used for passwordless authentication from GitHub Actions to GCP.
 - [ ] **Service Account**: `github-actions@YOUR_PROJECT_ID.iam.gserviceaccount.com`
 - [ ] **Roles Assigned**:
   - [ ] `roles/container.developer` (To deploy to GKE)
+  - [ ] `roles/container.admin` (Required to install KEDA — creates ClusterRoles and ValidatingWebhookConfigurations)
+  - [ ] `roles/monitoring.viewer` (Required for Grafana to read Google Cloud Monitoring metrics)
 
 ## 4. GitHub Repository Secrets
 Store these in GitHub (**Settings > Secrets and variables > Actions**):
@@ -43,4 +45,20 @@ gcloud services enable container.googleapis.com iamcredentials.googleapis.com
 gcloud container clusters create-auto vllm-cluster \
     --region us-central1 \
     --project YOUR_GCP_PROJECT_ID
+
+# Grant container.admin role to GitHub Actions service account
+# Required for KEDA installation — allows creating ClusterRoles,
+# ClusterRoleBindings, and ValidatingWebhookConfigurations
+gcloud projects add-iam-policy-binding YOUR_GCP_PROJECT_ID \
+  --member="serviceAccount:github-actions@YOUR_GCP_PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/container.admin"
+
+# Grant monitoring.viewer role to GKE node service account
+# Required for Grafana to read Google Cloud Monitoring metrics
+# Find your project number first:
+gcloud projects describe YOUR_GCP_PROJECT_ID --format="value(projectNumber)"
+# Then grant the role:
+gcloud projects add-iam-policy-binding YOUR_GCP_PROJECT_ID \
+  --member="serviceAccount:YOUR_PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role="roles/monitoring.viewer"
 ```

@@ -6,3 +6,6 @@ coverage/
 .git/
 .env*
 *.log
+roadmap.md
+start.sh
+stop.sh

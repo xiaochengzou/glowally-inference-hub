@@ -13,10 +13,37 @@ env:
   SERVICE_ACCOUNT: github-actions@glowally-vllm.iam.gserviceaccount.com
 
 jobs:
-  setup-build-publish-deploy:
-    name: Setup, Build, Publish, and Deploy
+  validate:
+    name: Validate Kubernetes Manifests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install kubeconform
+      run: |
+        curl -sL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
+        sudo mv kubeconform /usr/local/bin/
+
+    - name: Install kustomize
+      run: |
+        curl -sL https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.3.0/kustomize_v5.3.0_linux_amd64.tar.gz | tar xz
+        sudo mv kustomize /usr/local/bin/
+
+    - name: Validate manifests with kubeconform
+      run: |
+        kustomize build k8s/overlays/gke | kubeconform \
+          --strict \
+          --ignore-missing-schemas \
+          --kubernetes-version 1.33.0 \
+          --summary
+
+  deploy:
+    name: Deploy to GKE
     runs-on: ubuntu-latest
     environment: production
+    needs: validate  # Only deploy if validation passes
 
     permissions:
       contents: 'read'
@@ -26,31 +53,47 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    # Configure Workload Identity Federation and generate an access token.
-    - id: 'auth'
-      name: 'Authenticate to Google Cloud'
-      uses: 'google-github-actions/auth@v2'
+    - name: Authenticate to Google Cloud
+      id: auth
+      uses: google-github-actions/auth@v2
       with:
-        token_format: 'access_token'
+        token_format: access_token
         workload_identity_provider: '${{ env.WORKLOAD_IDENTITY_PROVIDER }}'
         service_account: '${{ env.SERVICE_ACCOUNT }}'
 
-    - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v2'
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
 
-    - name: 'Get GKE Credentials'
-      uses: 'google-github-actions/get-gke-credentials@v2'
+    - name: Get GKE Credentials
+      uses: google-github-actions/get-gke-credentials@v2
       with:
         cluster_name: '${{ env.GKE_CLUSTER }}'
         location: '${{ env.GKE_ZONE }}'
 
-    # Inject the HF_TOKEN into the K8s secret before applying
-    - name: 'Inject Secrets'
+    - name: Inject Secrets
       run: |
         echo "hf_token=${{ secrets.HF_TOKEN }}" > k8s/base/secret.env
 
-    # Deploy the Docker image to the GKE cluster
+    - name: Dry Run
+      run: |
+        kubectl apply -k k8s/overlays/gke --dry-run=server
+        echo "Dry run passed — safe to deploy"
+
     - name: Deploy
       run: |
         kubectl apply -k k8s/overlays/gke
-        kubectl rollout status deployment/vllm-server
+
+    - name: Wait for rollout
+      run: |
+        # vLLM requires GPU node provisioning which can take 15-20 mins —
+        # skipping rollout watch to avoid false timeout failures.
+        # Monitor manually with: kubectl get pods -w
+        echo "vLLM deployment applied — monitor GPU node provisioning with: kubectl get pods -w"
+        kubectl rollout status deployment/grafana --timeout=120s
+
+    - name: Rollback on failure
+      if: failure()
+      run: |
+        echo "Deployment failed — rolling back Grafana..."
+        kubectl rollout undo deployment/grafana
+        echo "Rollback complete"

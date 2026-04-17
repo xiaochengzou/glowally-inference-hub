@@ -10,143 +10,299 @@
       "title": "GPU Utilization %",
       "description": "Fraction of time the GPU is not idle (DCGM_FI_DEV_GPU_UTIL)",
       "type": "gauge",
-      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
       "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
         "minVizValue": 0,
         "maxVizValue": 100
       },
-      "targets": [{
-        "refId": "A",
-        "metricType": "prometheus/DCGM_FI_DEV_GPU_UTIL/gauge",
-        "metricKind": "GAUGE",
-        "valueType": "DOUBLE"
-      }]
+      "targets": [
+        {
+          "refId": "A",
+          "metricType": "prometheus/DCGM_FI_DEV_GPU_UTIL/gauge",
+          "metricKind": "GAUGE",
+          "valueType": "DOUBLE",
+          "datasource": {
+            "type": "cloud-monitoring",
+            "uid": "P53B7819E0F26D6F4"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "cloud-monitoring",
+        "uid": "P53B7819E0F26D6F4"
+      }
     },
     {
       "id": 2,
       "title": "GPU Memory Used (MiB)",
       "description": "Framebuffer memory used (DCGM_FI_DEV_FB_USED)",
       "type": "stat",
-      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
-      "targets": [{
-        "refId": "A",
-        "metricType": "prometheus/DCGM_FI_DEV_FB_USED/gauge",
-        "metricKind": "GAUGE",
-        "valueType": "DOUBLE"
-      }]
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "metricType": "prometheus/DCGM_FI_DEV_FB_USED/gauge",
+          "metricKind": "GAUGE",
+          "valueType": "DOUBLE",
+          "datasource": {
+            "type": "cloud-monitoring",
+            "uid": "P53B7819E0F26D6F4"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "cloud-monitoring",
+        "uid": "P53B7819E0F26D6F4"
+      }
     },
     {
       "id": 3,
       "title": "GPU Memory Free (MiB)",
       "description": "Framebuffer memory free (DCGM_FI_DEV_FB_FREE)",
       "type": "stat",
-      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
-      "targets": [{
-        "refId": "A",
-        "metricType": "prometheus/DCGM_FI_DEV_FB_FREE/gauge",
-        "metricKind": "GAUGE",
-        "valueType": "DOUBLE"
-      }]
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "metricType": "prometheus/DCGM_FI_DEV_FB_FREE/gauge",
+          "metricKind": "GAUGE",
+          "valueType": "DOUBLE",
+          "datasource": {
+            "type": "cloud-monitoring",
+            "uid": "P53B7819E0F26D6F4"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "cloud-monitoring",
+        "uid": "P53B7819E0F26D6F4"
+      }
     },
     {
       "id": 4,
-      "title": "GPU Temperature (°C)",
+      "title": "GPU Temperature (\u00b0C)",
       "description": "Current GPU temperature (DCGM_FI_DEV_GPU_TEMP)",
       "type": "stat",
-      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
-      "targets": [{
-        "refId": "A",
-        "metricType": "prometheus/DCGM_FI_DEV_GPU_TEMP/gauge",
-        "metricKind": "GAUGE",
-        "valueType": "DOUBLE"
-      }]
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "metricType": "prometheus/DCGM_FI_DEV_GPU_TEMP/gauge",
+          "metricKind": "GAUGE",
+          "valueType": "DOUBLE",
+          "datasource": {
+            "type": "cloud-monitoring",
+            "uid": "P53B7819E0F26D6F4"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "cloud-monitoring",
+        "uid": "P53B7819E0F26D6F4"
+      }
     },
     {
       "id": 5,
       "title": "SM Active Ratio",
       "description": "Ratio of cycles a Streaming Multiprocessor has at least 1 warp assigned (DCGM_FI_PROF_SM_ACTIVE). Higher = GPU is being used more efficiently.",
       "type": "timeseries",
-      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
-      "targets": [{
-        "refId": "A",
-        "metricType": "prometheus/DCGM_FI_PROF_SM_ACTIVE/gauge",
-        "metricKind": "GAUGE",
-        "valueType": "DOUBLE"
-      }]
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "metricType": "prometheus/DCGM_FI_PROF_SM_ACTIVE/gauge",
+          "metricKind": "GAUGE",
+          "valueType": "DOUBLE",
+          "datasource": {
+            "type": "cloud-monitoring",
+            "uid": "P53B7819E0F26D6F4"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "cloud-monitoring",
+        "uid": "P53B7819E0F26D6F4"
+      }
     },
     {
       "id": 6,
       "title": "Tensor Core Active Ratio",
-      "description": "Ratio of cycles the Tensor (HMMA) pipe is active (DCGM_FI_PROF_PIPE_TENSOR_ACTIVE). Key metric for transformer inference — higher = better utilization of matrix multiply units.",
+      "description": "Ratio of cycles the Tensor (HMMA) pipe is active (DCGM_FI_PROF_PIPE_TENSOR_ACTIVE). Key metric for transformer inference \u2014 higher = better utilization of matrix multiply units.",
       "type": "timeseries",
-      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
-      "targets": [{
-        "refId": "A",
-        "metricType": "prometheus/DCGM_FI_PROF_PIPE_TENSOR_ACTIVE/gauge",
-        "metricKind": "GAUGE",
-        "valueType": "DOUBLE"
-      }]
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "metricType": "prometheus/DCGM_FI_PROF_PIPE_TENSOR_ACTIVE/gauge",
+          "metricKind": "GAUGE",
+          "valueType": "DOUBLE",
+          "datasource": {
+            "type": "cloud-monitoring",
+            "uid": "P53B7819E0F26D6F4"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "cloud-monitoring",
+        "uid": "P53B7819E0F26D6F4"
+      }
     },
     {
       "id": 7,
       "title": "GPU Power Draw (Watts)",
-      "description": "Power usage for the device in Watts (DCGM_FI_DEV_POWER_USAGE). L4 TDP is 72W — sustained high power = GPU is working hard.",
+      "description": "Power usage for the device in Watts (DCGM_FI_DEV_POWER_USAGE). L4 TDP is 72W \u2014 sustained high power = GPU is working hard.",
       "type": "timeseries",
-      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
-      "targets": [{
-        "refId": "A",
-        "metricType": "prometheus/DCGM_FI_DEV_POWER_USAGE/gauge",
-        "metricKind": "GAUGE",
-        "valueType": "DOUBLE"
-      }]
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "metricType": "prometheus/DCGM_FI_DEV_POWER_USAGE/gauge",
+          "metricKind": "GAUGE",
+          "valueType": "DOUBLE",
+          "datasource": {
+            "type": "cloud-monitoring",
+            "uid": "P53B7819E0F26D6F4"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "cloud-monitoring",
+        "uid": "P53B7819E0F26D6F4"
+      }
     },
     {
       "id": 8,
       "title": "PCIe Throughput (TX / RX bytes)",
-      "description": "PCIe TX (DCGM_FI_PROF_PCIE_TX_BYTES) and RX (DCGM_FI_PROF_PCIE_RX_BYTES). High PCIe traffic during inference indicates CPU→GPU data transfer — potential bottleneck if sustained.",
+      "description": "PCIe TX (DCGM_FI_PROF_PCIE_TX_BYTES) and RX (DCGM_FI_PROF_PCIE_RX_BYTES). High PCIe traffic during inference indicates CPU\u2192GPU data transfer \u2014 potential bottleneck if sustained.",
       "type": "timeseries",
-      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      },
       "targets": [
         {
           "refId": "TX",
           "metricType": "prometheus/DCGM_FI_PROF_PCIE_TX_BYTES/gauge",
           "metricKind": "GAUGE",
-          "valueType": "DOUBLE"
+          "valueType": "DOUBLE",
+          "datasource": {
+            "type": "cloud-monitoring",
+            "uid": "P53B7819E0F26D6F4"
+          }
         },
         {
           "refId": "RX",
           "metricType": "prometheus/DCGM_FI_PROF_PCIE_RX_BYTES/gauge",
           "metricKind": "GAUGE",
-          "valueType": "DOUBLE"
+          "valueType": "DOUBLE",
+          "datasource": {
+            "type": "cloud-monitoring",
+            "uid": "P53B7819E0F26D6F4"
+          }
         }
-      ]
+      ],
+      "datasource": {
+        "type": "cloud-monitoring",
+        "uid": "P53B7819E0F26D6F4"
+      }
     },
     {
       "id": 9,
       "title": "Memory Copy Utilization %",
-      "description": "Memory bandwidth utilization (DCGM_FI_DEV_MEM_COPY_UTIL). L4 has 300 GB/s HBM bandwidth — sustained high % = memory-bound workload.",
+      "description": "Memory bandwidth utilization (DCGM_FI_DEV_MEM_COPY_UTIL). L4 has 300 GB/s HBM bandwidth \u2014 sustained high % = memory-bound workload.",
       "type": "timeseries",
-      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
-      "targets": [{
-        "refId": "A",
-        "metricType": "prometheus/DCGM_FI_DEV_MEM_COPY_UTIL/gauge",
-        "metricKind": "GAUGE",
-        "valueType": "DOUBLE"
-      }]
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "metricType": "prometheus/DCGM_FI_DEV_MEM_COPY_UTIL/gauge",
+          "metricKind": "GAUGE",
+          "valueType": "DOUBLE",
+          "datasource": {
+            "type": "cloud-monitoring",
+            "uid": "P53B7819E0F26D6F4"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "cloud-monitoring",
+        "uid": "P53B7819E0F26D6F4"
+      }
     },
     {
       "id": 10,
       "title": "FP16 Pipe Active Ratio",
-      "description": "Fraction of cycles the FP16 (half precision) pipe was active (DCGM_FI_PROF_PIPE_FP16_ACTIVE). vLLM runs in FP16 by default — this shows how actively the GPU is doing inference math.",
+      "description": "Fraction of cycles the FP16 (half precision) pipe was active (DCGM_FI_PROF_PIPE_FP16_ACTIVE). vLLM runs in FP16 by default \u2014 this shows how actively the GPU is doing inference math.",
       "type": "timeseries",
-      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 },
-      "targets": [{
-        "refId": "A",
-        "metricType": "prometheus/DCGM_FI_PROF_PIPE_FP16_ACTIVE/gauge",
-        "metricKind": "GAUGE",
-        "valueType": "DOUBLE"
-      }]
+      "gridPos": {
+        "x": 12,
+        "y": 20,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "metricType": "prometheus/DCGM_FI_PROF_PIPE_FP16_ACTIVE/gauge",
+          "metricKind": "GAUGE",
+          "valueType": "DOUBLE",
+          "datasource": {
+            "type": "cloud-monitoring",
+            "uid": "P53B7819E0F26D6F4"
+          }
+        }
+      ],
+      "datasource": {
+        "type": "cloud-monitoring",
+        "uid": "P53B7819E0F26D6F4"
+      }
     }
   ]
 }

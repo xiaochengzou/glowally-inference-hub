@@ -70,6 +70,20 @@ jobs:
         cluster_name: '${{ env.GKE_CLUSTER }}'
         location: '${{ env.GKE_ZONE }}'
 
+    - name: Install KEDA (skips if already installed)
+      run: |
+        helm repo add kedacore https://kedacore.github.io/charts
+        helm repo update
+        helm upgrade --install keda kedacore/keda \
+          --namespace keda \
+          --create-namespace \
+          --version 2.13.0
+        kubectl wait --for=condition=ready pod \
+          -l app=keda-operator \
+          -n keda \
+          --timeout=120s
+        echo "KEDA ready ✅"
+
     - name: Inject Secrets
       run: |
         echo "hf_token=${{ secrets.HF_TOKEN }}" > k8s/base/secret.env

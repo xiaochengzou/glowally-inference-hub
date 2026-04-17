@@ -1,0 +1,20 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: vllm-scaler
+spec:
+  scaleTargetRef:
+    name: vllm-server
+  minReplicaCount: 1   # Always keep one pod warm — avoids cold start and missing metrics
+  maxReplicaCount: 2   # Scale up to 2 under high load, limited by GPU Quota
+  cooldownPeriod: 300  # Wait 5 mins before scaling down — avoids thrashing
+  pollingInterval: 30  # Check metrics every 30s — matches PodMonitoring interval
+  triggers:
+  - type: gcp-stackdriver
+    metadata:
+      projectId: glowally-vllm
+      # Full GCM metric path as seen in Google Cloud Console
+      filter: metric.type="prometheus.googleapis.com/vllm:num_requests_waiting/gauge"
+      targetValue: "5"              # Scale up when 5+ requests are waiting
+      alignmentPeriodSeconds: "60"  # Average metric over 60s window
+      alignmentAligner: ALIGN_MEAN

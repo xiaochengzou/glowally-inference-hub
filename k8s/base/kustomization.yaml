@@ -8,6 +8,9 @@ resources:
   - monitoring.yaml
   # Grafana
   - grafana/deployment.yaml
+  # KEDA: TODO: disable auto scaling/descaling for now as there is only 1 GPU qutoa.
+  # Enable it once the GPU quota is increased.
+  # - keda/scaled-object.yaml
 
 secretGenerator:
   - name: hf-token-secret

@@ -18,7 +18,7 @@
       },
       "targets": [{
         "refId": "A",
-        "metricType": "prometheus.googleapis.com/DCGM_FI_DEV_GPU_UTIL/gauge",
+        "metricType": "prometheus/DCGM_FI_DEV_GPU_UTIL/gauge",
         "metricKind": "GAUGE",
         "valueType": "DOUBLE"
       }]
@@ -31,7 +31,7 @@
       "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
       "targets": [{
         "refId": "A",
-        "metricType": "prometheus.googleapis.com/DCGM_FI_DEV_FB_USED/gauge",
+        "metricType": "prometheus/DCGM_FI_DEV_FB_USED/gauge",
         "metricKind": "GAUGE",
         "valueType": "DOUBLE"
       }]
@@ -44,7 +44,7 @@
       "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
       "targets": [{
         "refId": "A",
-        "metricType": "prometheus.googleapis.com/DCGM_FI_DEV_FB_FREE/gauge",
+        "metricType": "prometheus/DCGM_FI_DEV_FB_FREE/gauge",
         "metricKind": "GAUGE",
         "valueType": "DOUBLE"
       }]
@@ -57,7 +57,7 @@
       "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
       "targets": [{
         "refId": "A",
-        "metricType": "prometheus.googleapis.com/DCGM_FI_DEV_GPU_TEMP/gauge",
+        "metricType": "prometheus/DCGM_FI_DEV_GPU_TEMP/gauge",
         "metricKind": "GAUGE",
         "valueType": "DOUBLE"
       }]
@@ -70,7 +70,7 @@
       "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
       "targets": [{
         "refId": "A",
-        "metricType": "prometheus.googleapis.com/DCGM_FI_PROF_SM_ACTIVE/gauge",
+        "metricType": "prometheus/DCGM_FI_PROF_SM_ACTIVE/gauge",
         "metricKind": "GAUGE",
         "valueType": "DOUBLE"
       }]
@@ -83,7 +83,7 @@
       "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
       "targets": [{
         "refId": "A",
-        "metricType": "prometheus.googleapis.com/DCGM_FI_PROF_PIPE_TENSOR_ACTIVE/gauge",
+        "metricType": "prometheus/DCGM_FI_PROF_PIPE_TENSOR_ACTIVE/gauge",
         "metricKind": "GAUGE",
         "valueType": "DOUBLE"
       }]
@@ -96,7 +96,7 @@
       "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
       "targets": [{
         "refId": "A",
-        "metricType": "prometheus.googleapis.com/DCGM_FI_DEV_POWER_USAGE/gauge",
+        "metricType": "prometheus/DCGM_FI_DEV_POWER_USAGE/gauge",
         "metricKind": "GAUGE",
         "valueType": "DOUBLE"
       }]
@@ -110,13 +110,13 @@
       "targets": [
         {
           "refId": "TX",
-          "metricType": "prometheus.googleapis.com/DCGM_FI_PROF_PCIE_TX_BYTES/gauge",
+          "metricType": "prometheus/DCGM_FI_PROF_PCIE_TX_BYTES/gauge",
           "metricKind": "GAUGE",
           "valueType": "DOUBLE"
         },
         {
           "refId": "RX",
-          "metricType": "prometheus.googleapis.com/DCGM_FI_PROF_PCIE_RX_BYTES/gauge",
+          "metricType": "prometheus/DCGM_FI_PROF_PCIE_RX_BYTES/gauge",
           "metricKind": "GAUGE",
           "valueType": "DOUBLE"
         }
@@ -130,7 +130,7 @@
       "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
       "targets": [{
         "refId": "A",
-        "metricType": "prometheus.googleapis.com/DCGM_FI_DEV_MEM_COPY_UTIL/gauge",
+        "metricType": "prometheus/DCGM_FI_DEV_MEM_COPY_UTIL/gauge",
         "metricKind": "GAUGE",
         "valueType": "DOUBLE"
       }]
@@ -143,7 +143,7 @@
       "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 },
       "targets": [{
         "refId": "A",
-        "metricType": "prometheus.googleapis.com/DCGM_FI_PROF_PIPE_FP16_ACTIVE/gauge",
+        "metricType": "prometheus/DCGM_FI_PROF_PIPE_FP16_ACTIVE/gauge",
         "metricKind": "GAUGE",
         "valueType": "DOUBLE"
       }]

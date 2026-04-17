@@ -1,7 +1,7 @@
 apiVersion: 1
 datasources:
   - name: Google Cloud Monitoring
-    type: cloud-monitoring   # Built-in plugin in Grafana 10+, no installation needed
+    type: stackdriver
     access: proxy
     isDefault: true
     jsonData:

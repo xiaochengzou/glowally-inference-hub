@@ -23,7 +23,6 @@ Used for passwordless authentication from GitHub Actions to GCP.
 - [ ] **Roles Assigned**:
   - [ ] `roles/container.developer` (To deploy to GKE)
   - [ ] `roles/container.admin` (Required to install KEDA — creates ClusterRoles and ValidatingWebhookConfigurations)
-  - [ ] `roles/monitoring.viewer` (Required for Grafana to read Google Cloud Monitoring metrics)
 
 ## 4. GitHub Repository Secrets
 Store these in GitHub (**Settings > Secrets and variables > Actions**):
@@ -39,7 +38,8 @@ For quick setup via `gcloud`:
 
 ```bash
 # Enable APIs
-gcloud services enable container.googleapis.com iamcredentials.googleapis.com
+- [ ] gcloud services enable container.googleapis.com iamcredentials.googleapis.com
+- [ ] gcloud services enable cloudresourcemanager.googleapis.com --project=glowally-vllm (Required for Grafana stackdriver plugin to list GCP projects)
 
 # Create GKE Autopilot cluster
 gcloud container clusters create-auto vllm-cluster \
@@ -53,12 +53,33 @@ gcloud projects add-iam-policy-binding YOUR_GCP_PROJECT_ID \
   --member="serviceAccount:github-actions@YOUR_GCP_PROJECT_ID.iam.gserviceaccount.com" \
   --role="roles/container.admin"
 
-# Grant monitoring.viewer role to GKE node service account
-# Required for Grafana to read Google Cloud Monitoring metrics
 # Find your project number first:
 gcloud projects describe YOUR_GCP_PROJECT_ID --format="value(projectNumber)"
-# Then grant the role:
+
+# ── Grafana IAM (Workload Identity) ──────────────────────────────────────────
+# GKE Autopilot uses Workload Identity — pods authenticate via the Kubernetes
+# default service account mapped to a GCP Workload Identity pool identity.
+# The node compute service account is NOT used for pod-level API calls.
+#
+# Grant monitoring.viewer to Workload Identity
+# Required for Grafana to read Google Cloud Monitoring metrics
 gcloud projects add-iam-policy-binding YOUR_GCP_PROJECT_ID \
-  --member="serviceAccount:YOUR_PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --member="principal://iam.googleapis.com/projects/YOUR_PROJECT_NUMBER/locations/global/workloadIdentityPools/YOUR_GCP_PROJECT_ID.svc.id.goog/subject/ns/default/sa/default" \
   --role="roles/monitoring.viewer"
+
+# Grant browser to Workload Identity
+# Required for Grafana stackdriver plugin to list GCP projects
+# (calls /resources/projects API which needs resourcemanager.projects.get)
+gcloud projects add-iam-policy-binding YOUR_GCP_PROJECT_ID \
+  --member="principal://iam.googleapis.com/projects/YOUR_PROJECT_NUMBER/locations/global/workloadIdentityPools/YOUR_GCP_PROJECT_ID.svc.id.goog/subject/ns/default/sa/default" \
+  --role="roles/browser"
+
+# Note: The following grants to the node compute service account are NOT
+# effective when Workload Identity is enabled — kept here for reference only
+# gcloud projects add-iam-policy-binding YOUR_GCP_PROJECT_ID \
+#   --member="serviceAccount:YOUR_PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+#   --role="roles/monitoring.viewer"
+# gcloud projects add-iam-policy-binding YOUR_GCP_PROJECT_ID \
+#   --member="serviceAccount:YOUR_PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+#   --role="roles/browser"
 ```

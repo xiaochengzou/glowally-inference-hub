@@ -9,199 +9,156 @@
       "id": 1,
       "title": "Running Requests",
       "type": "stat",
-      "gridPos": {
-        "x": 0,
-        "y": 0,
-        "w": 6,
-        "h": 4
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "metricType": "prometheus.googleapis.com/vllm:num_requests_running/gauge",
-          "metricKind": "GAUGE",
-          "valueType": "DOUBLE",
-          "datasource": {
-            "type": "cloud-monitoring",
-            "uid": "P53B7819E0F26D6F4"
-          }
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_MEAN",
+          "groupBys": [],
+          "filters": ["metric.type", "=", "prometheus.googleapis.com/vllm:num_requests_running/gauge"],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ],
-      "datasource": {
-        "type": "cloud-monitoring",
-        "uid": "P53B7819E0F26D6F4"
-      }
+      }]
     },
     {
       "id": 2,
       "title": "Waiting Requests (Queue Depth)",
       "type": "stat",
-      "gridPos": {
-        "x": 6,
-        "y": 0,
-        "w": 6,
-        "h": 4
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "metricType": "prometheus.googleapis.com/vllm:num_requests_waiting/gauge",
-          "metricKind": "GAUGE",
-          "valueType": "DOUBLE",
-          "datasource": {
-            "type": "cloud-monitoring",
-            "uid": "P53B7819E0F26D6F4"
-          }
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_MEAN",
+          "groupBys": [],
+          "filters": ["metric.type", "=", "prometheus.googleapis.com/vllm:num_requests_waiting/gauge"],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ],
-      "datasource": {
-        "type": "cloud-monitoring",
-        "uid": "P53B7819E0F26D6F4"
-      }
+      }]
     },
     {
       "id": 3,
       "title": "GPU KV Cache Utilization",
       "type": "gauge",
-      "gridPos": {
-        "x": 12,
-        "y": 0,
-        "w": 6,
-        "h": 4
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
-        },
-        "minVizValue": 0,
-        "maxVizValue": 1
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "metricType": "prometheus.googleapis.com/vllm:gpu_cache_usage_perc/gauge",
-          "metricKind": "GAUGE",
-          "valueType": "DOUBLE",
-          "datasource": {
-            "type": "cloud-monitoring",
-            "uid": "P53B7819E0F26D6F4"
-          }
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "minVizValue": 0, "maxVizValue": 1 },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_MEAN",
+          "groupBys": [],
+          "filters": ["metric.type", "=", "prometheus.googleapis.com/vllm:gpu_cache_usage_perc/gauge"],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ],
-      "datasource": {
-        "type": "cloud-monitoring",
-        "uid": "P53B7819E0F26D6F4"
-      }
+      }]
     },
     {
       "id": 4,
       "title": "Tokens Generated per Second",
       "type": "timeseries",
-      "gridPos": {
-        "x": 0,
-        "y": 4,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "metricType": "prometheus.googleapis.com/vllm:generation_tokens_total/counter",
-          "metricKind": "CUMULATIVE",
-          "valueType": "DOUBLE",
-          "datasource": {
-            "type": "cloud-monitoring",
-            "uid": "P53B7819E0F26D6F4"
-          }
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_MEAN",
+          "groupBys": [],
+          "filters": ["metric.type", "=", "prometheus.googleapis.com/vllm:generation_tokens_total/counter"],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ],
-      "datasource": {
-        "type": "cloud-monitoring",
-        "uid": "P53B7819E0F26D6F4"
-      }
+      }]
     },
     {
       "id": 5,
       "title": "Time to First Token (ms)",
       "type": "timeseries",
-      "gridPos": {
-        "x": 12,
-        "y": 4,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "metricType": "prometheus.googleapis.com/vllm:time_to_first_token_seconds/histogram",
-          "metricKind": "CUMULATIVE",
-          "valueType": "DISTRIBUTION",
-          "datasource": {
-            "type": "cloud-monitoring",
-            "uid": "P53B7819E0F26D6F4"
-          }
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_MEAN",
+          "groupBys": [],
+          "filters": ["metric.type", "=", "prometheus.googleapis.com/vllm:time_to_first_token_seconds/histogram"],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ],
-      "datasource": {
-        "type": "cloud-monitoring",
-        "uid": "P53B7819E0F26D6F4"
-      }
+      }]
     },
     {
       "id": 6,
       "title": "Request Throughput (req/s)",
       "type": "timeseries",
-      "gridPos": {
-        "x": 0,
-        "y": 12,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "metricType": "prometheus.googleapis.com/vllm:request_success_total/counter",
-          "metricKind": "CUMULATIVE",
-          "valueType": "DOUBLE",
-          "datasource": {
-            "type": "cloud-monitoring",
-            "uid": "P53B7819E0F26D6F4"
-          }
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_MEAN",
+          "groupBys": [],
+          "filters": ["metric.type", "=", "prometheus.googleapis.com/vllm:request_success_total/counter"],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ],
-      "datasource": {
-        "type": "cloud-monitoring",
-        "uid": "P53B7819E0F26D6F4"
-      }
+      }]
     },
     {
       "id": 7,
       "title": "Inter-Token Latency (ms)",
       "type": "timeseries",
-      "gridPos": {
-        "x": 12,
-        "y": 12,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "metricType": "prometheus.googleapis.com/vllm:time_per_output_token_seconds/histogram",
-          "metricKind": "CUMULATIVE",
-          "valueType": "DISTRIBUTION",
-          "datasource": {
-            "type": "cloud-monitoring",
-            "uid": "P53B7819E0F26D6F4"
-          }
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_MEAN",
+          "groupBys": [],
+          "filters": ["metric.type", "=", "prometheus.googleapis.com/vllm:time_per_output_token_seconds/histogram"],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ],
-      "datasource": {
-        "type": "cloud-monitoring",
-        "uid": "P53B7819E0F26D6F4"
-      }
+      }]
     }
   ]
 }

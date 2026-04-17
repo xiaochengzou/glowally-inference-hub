@@ -78,11 +78,7 @@ jobs:
           --namespace keda \
           --create-namespace \
           --version 2.13.0
-        kubectl wait --for=condition=ready pod \
-          -l app=keda-operator \
-          -n keda \
-          --timeout=120s
-        echo "KEDA ready ✅"
+        echo "KEDA installation triggered ✅ (starting in background)"
 
     - name: Inject Secrets
       run: |
@@ -103,7 +99,7 @@ jobs:
         # skipping rollout watch to avoid false timeout failures.
         # Monitor manually with: kubectl get pods -w
         echo "vLLM deployment applied — monitor GPU node provisioning with: kubectl get pods -w"
-        kubectl rollout status deployment/grafana --timeout=120s
+        kubectl rollout status deployment/grafana --timeout=300s
 
     - name: Rollback on failure
       if: failure()

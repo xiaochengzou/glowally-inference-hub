@@ -50,26 +50,22 @@ spec:
               echo "HF_TOKEN is set (starts with: ${HF_TOKEN:0:8}...)"
             fi
 
-            echo "=== [4/4] Downloading LoRA adapter ==="
+            echo "=== [4/4] Downloading LoRA adapters ==="
             python -c "
             import os
             from huggingface_hub import snapshot_download
 
-            print('Authenticating with HF token...')
             token = os.environ.get('HF_TOKEN')
+            adapters = [
+                ('vindows/qwen2.5-7b-text-to-sql', '/data/sql-lora'),
+                ('miarick/Qwen2.5-7B-Instruct-cyberpunk-literary-lora', '/data/creative-lora'),
+            ]
 
-            print('Starting download of vindows/qwen2.5-7b-text-to-sql...')
-            path = snapshot_download(
-                repo_id='vindows/qwen2.5-7b-text-to-sql',
-                local_dir='/data/sql-lora',
-                token=token
-            )
-            print(f'Download complete. Files saved to: {path}')
-
-            files = list(os.walk('/data/sql-lora'))
-            print(f'Total directories: {len(files)}')
-            total_files = sum(len(f) for _, _, f in files)
-            print(f'Total files: {total_files}')
+            for repo_id, local_dir in adapters:
+                print(f'Downloading {repo_id} -> {local_dir} ...')
+                path = snapshot_download(repo_id=repo_id, local_dir=local_dir, token=token)
+                total_files = sum(len(f) for _, _, f in os.walk(local_dir))
+                print(f'Done: {total_files} files in {path}')
             "
 
             echo "=== DONE ==="
@@ -80,13 +76,19 @@ spec:
       containers:
       - name: vllm-engine
         image: vllm/vllm-openai:latest
+        env:
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token-secret
+              key: hf_token
         args: [
           "--model", "Qwen/Qwen2.5-7B-Instruct",
           "--gpu-memory-utilization", "0.7", # Lowered to provide VRAM for adapters
-          "--max-model-len", "4096",
+          "--max-model-len", "3072",
           "--enable-lora", # Required for multi-adapter support
-          "--lora-modules", "sql-expert=/data/sql-lora", # Maps friendly name to path
-          "--max-loras", "1",
+          "--lora-modules", "sql-expert=/data/sql-lora", "creative=/data/creative-lora",
+          "--max-loras", "2",
           "--max-lora-rank", "16",
           "--enforce-eager"
         ]

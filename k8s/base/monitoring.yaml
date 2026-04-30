@@ -5,8 +5,8 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: vllm-server
+      app: llm-adaptive-router
   endpoints:
-  - port: 8000
+  - port: 8002
     path: /metrics
     interval: 30s

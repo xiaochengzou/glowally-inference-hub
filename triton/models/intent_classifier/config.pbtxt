@@ -1,0 +1,41 @@
+# Intent classifier — DistilBERT fine-tuned for 3 classes: GENERAL, SQL, CREATIVE
+# Backend: ONNX Runtime (GPU instance for <15ms latency SLO)
+# model.onnx is downloaded at pod startup by the init container
+
+name: "intent_classifier"
+backend: "onnxruntime"
+max_batch_size: 32
+
+input [
+  {
+    name: "input_ids"
+    data_type: TYPE_INT64
+    dims: [ -1 ]   # variable sequence length, max 128 enforced by BLS tokenizer
+  },
+  {
+    name: "attention_mask"
+    data_type: TYPE_INT64
+    dims: [ -1 ]
+  }
+]
+
+output [
+  {
+    name: "logits"
+    data_type: TYPE_FP32
+    dims: [ 3 ]    # [GENERAL, SQL, CREATIVE]
+  }
+]
+
+dynamic_batching {
+  preferred_batch_size: [ 1, 4, 8 ]
+  max_queue_delay_microseconds: 1000
+}
+
+instance_group [
+  {
+    kind: KIND_GPU
+    count: 1
+    gpus: [ 0 ]
+  }
+]

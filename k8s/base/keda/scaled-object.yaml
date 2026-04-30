@@ -4,7 +4,7 @@ metadata:
   name: vllm-scaler
 spec:
   scaleTargetRef:
-    name: vllm-server
+    name: llm-adaptive-router
   minReplicaCount: 1   # Always keep one pod warm — avoids cold start and missing metrics
   maxReplicaCount: 2   # Scale up to 2 under high load, limited by GPU Quota
   cooldownPeriod: 300  # Wait 5 mins before scaling down — avoids thrashing

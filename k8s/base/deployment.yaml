@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vllm-server
+  name: llm-adaptive-router
   labels:
-    app: vllm-server
+    app: llm-adaptive-router
 spec:
   replicas: 1
   strategy:
     type: Recreate  # This kills the old pod first, freeing the GPU for the new one since GPU quota is 1.
   selector:
     matchLabels:
-      app: vllm-server
+      app: llm-adaptive-router
   template:
     metadata:
       labels:
-        app: vllm-server
+        app: llm-adaptive-router
     spec:
       # 1. SHARED STORAGE: Temporary folder for adapters
       volumes:

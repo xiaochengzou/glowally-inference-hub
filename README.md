@@ -1,109 +1,139 @@
 # Glowally Inference Hub
 
 ## Overview
-Glowally Inference Hub is a cost-efficient, multi-tenant AI inference platform hosted on **GKE Autopilot**. It serves as a comprehensive demonstration of a production-ready infrastructure setup for **AI Inference Engineering**. The system utilizes **vLLM** to serve specialized **LoRA adapters** (starting with Text-to-SQL) alongside a base **Qwen 2.5 7B** model on a single **NVIDIA L4 GPU (24GB VRAM)**.
 
-The primary goal is to showcase the integration of modern LLM serving engines with cloud-native orchestration, providing a blueprint for scalable and maintainable AI inference systems.
+Glowally Inference Hub is a production-ready AI inference platform on **GKE Autopilot** that demonstrates **intelligent request routing** for LLM serving. The system classifies incoming prompts by intent and automatically routes each request to the most appropriate model — a SQL LoRA adapter, a creative writing LoRA adapter, or the base model — all on a single **NVIDIA L4 GPU (24GB VRAM)**.
+
+The core innovation is the **server-side routing pipeline**: the client sends only a prompt, with no knowledge of which model or adapter handles it. A lightweight DistilBERT classifier (running on CPU) detects the intent and selects the adapter before the request reaches vLLM.
+
+## Architecture
+
+```
+Client (HTTP or gRPC)
+        │
+        ▼
+  router_bls (BLS)          ← Triton Python backend, synchronous
+        │
+        ├─ intent_classifier (DistilBERT ONNX, CPU)
+        │       classifies prompt → SQL / CREATIVE / GENERAL
+        │
+        └─ vllm_engine (vLLM backend, GPU)
+                routes to:
+                  sql-expert LoRA    (vindows/qwen2.5-7b-text-to-sql)
+                  creative LoRA      (miarick/Qwen2.5-7B-Instruct-cyberpunk-literary-lora)
+                  base model         (Qwen/Qwen2.5-7B-Instruct)
+```
+
+### Intent Classifier
+
+The DistilBERT classifier is a fine-tuned 3-class model trained to distinguish SQL, creative writing, and general prompts.
+
+- **Training notebook**: [Google Colab](https://colab.research.google.com/drive/1TBD8sqfuCPqfo2kTNV9MP0veaiHUx9Qv)
+- **Published model**: [xczou/distilbert-intent-sql-creative-general](https://huggingface.co/xczou/distilbert-intent-sql-creative-general) on HuggingFace
+- Exported to ONNX at pod startup and served on CPU via `onnxruntime`, keeping the full GPU free for vLLM
+
+### Serving Stack
+
+| Component | Role |
+|---|---|
+| **NVIDIA Triton 24.09** | Inference server — hosts all three models |
+| **vLLM 0.5.3** | LLM engine with multi-LoRA support |
+| **Qwen2.5-7B-Instruct** | Base LLM |
+| **DistilBERT (ONNX)** | Intent classifier — CPU only |
+| **router_bls** | BLS orchestration layer — classifies then routes |
 
 ## Technical Stack
-- **Serving Engine**: vLLM (v0.19.0+)
-- **Cloud Infrastructure**: Google Cloud Platform (GCP)
-- **Container Orchestration**: Google Kubernetes Engine (GKE) Autopilot
+
+- **Inference Server**: NVIDIA Triton Inference Server 24.09 (vLLM backend)
+- **LLM Engine**: vLLM with multi-LoRA adapter support
+- **Cloud**: GCP — GKE Autopilot, Cloud Monitoring (Managed Prometheus)
 - **Hardware**: NVIDIA L4 GPU (24GB VRAM)
-- **Monitoring**: Google Cloud Monitoring + Grafana
-- **CI/CD & GitOps**: GitHub Actions + Workload Identity Federation (WIF) + Kustomize
-- **Tooling & Services**: TypeScript, Vitest, kubeconform
+- **Monitoring**: Google Cloud Monitoring + Grafana (Stackdriver datasource)
+- **CI/CD**: GitHub Actions + Workload Identity Federation + Kustomize
+- **Auto-scaling**: KEDA (installed, ScaledObject currently disabled due to GPU quota limiation)
 
 ## Project Structure
+
 ```
 k8s/
-├── base/
-│   ├── kustomization.yaml       # Manages all resources, ConfigMaps, and Secrets
-│   ├── deployment.yaml          # vLLM server with LoRA downloader init container
-│   ├── service.yaml             # LoadBalancer for external access
-│   ├── monitoring.yaml          # PodMonitoring for Google Cloud Monitoring
-│   ├── secret.env               # HuggingFace token (not committed to git)
-│   ├── secret.env.example       # Template for secret.env
-│   └── grafana/
-│       ├── deployment.yaml      # Grafana pod
-│       ├── datasources.yaml     # Google Cloud Monitoring data source
-│       ├── dashboard-provider.yaml
-│       └── dashboards/
-│           └── vllm.json        # Pre-built vLLM metrics dashboard
+├── base/                        # Shared resources (service, monitoring, grafana)
 └── overlays/
-    └── gke/
-        └── kustomization.yaml   # GKE-specific overrides
+    ├── gke/                     # vLLM-only deployment
+    └── triton/                  # Triton + router_bls deployment (active)
+        ├── kustomization.yaml
+        └── deployment.yaml      # Patches base with Triton init container + server
+
+triton/
+├── models/
+│   ├── router_bls/1/model.py   # BLS routing logic (intent → LoRA selection)
+│   └── intent_classifier/1/model.py  # ONNX inference wrapper
+└── scripts/
+    └── model-setup.sh           # Init container: downloads LoRAs, exports ONNX,
+                                 # writes Triton config files
+
+test-router.py                   # End-to-end test — calls router_bls (no model specified)
 ```
 
-## Architecture & Deployment
+## Deploying
 
 ### Prerequisites
-- `kubectl` v1.21+
-- `gcloud` CLI authenticated to your GCP project
-- GKE Autopilot cluster running
-- `secret.env` file created from `secret.env.example` with your HuggingFace token
 
-### Deploying
-Always use Kustomize (`-k`) for deployments — never `-f` on individual files, as ConfigMaps and Secrets are generated by Kustomize and won't be created with `-f`.
+- `kubectl` configured against a GKE Autopilot cluster
+- `kustomize` CLI installed
+- `k8s/base/secret.env` created from `secret.env.example` with your HuggingFace token
+
+### Deploy Triton + router_bls
 
 ```bash
-kubectl apply -k k8s/base/
+make triton-deploy
 ```
 
-### vLLM Configuration
-To ensure stability on the 24GB L4 GPU, the following parameters are mandatory:
-- `--enforce-eager`: Bypasses the 5+ minute CUDA Graph warmup crash.
-- `--gpu-memory-utilization 0.7`: Provides a VRAM safety buffer.
-- `--enable-lora`: Enabled for multi-tenant adapter support.
-- `--max-loras 1`: Initial limit to prevent OOM.
-- **Deployment Strategy**: Use `type: Recreate` to ensure the GPU is fully freed before rescheduling.
+This validates manifests, applies them, and restarts the deployment. The init container runs on first pod start (~5–10 min) to download LoRA adapters and export the classifier to ONNX.
 
-### Key Paths & Troubleshooting
-- **GPU Driver**: Access `nvidia-smi` via `/usr/local/nvidia/bin/nvidia-smi`.
-- **OOM Prevention**: If CUDA OOM occurs, verify Eager mode and VRAM utilization settings.
+Monitor startup:
+```bash
+make triton-logs
+```
 
-## Maintenance Operations
-- **Scale Up**: `kubectl scale deployment vllm-server --replicas=1`
-- **Scale Down**: `kubectl scale deployment vllm-server --replicas=0` (Stops billing while preserving state)
-- **Verify Models**: `curl http://[LB_IP]/v1/models | jq .`
+### Scale up / down (cost control)
+
+```bash
+make triton-start    # scale to 1 replica
+make triton-stop     # scale to 0 — stops GPU billing
+```
+
+## Testing
+
+Please see the demo video here: https://youtu.be/8Wq1t6XmSsw
+
+### End-to-end routing test
+
+```bash
+pip install "tritonclient[grpc]" numpy
+python test-router.py           # gRPC (default)
+python test-router.py --http    # HTTP
+```
+
+Sends three prompts (SQL, creative, general) to `router_bls`. The client specifies only the prompt — no model name, no adapter name. The server classifies the intent and selects the adapter automatically.
 
 ## Monitoring & Grafana
 
-### Accessing Grafana
-Grafana is deployed as a `ClusterIP` service (internal only). To access it locally:
+Grafana is deployed as a ClusterIP service. Access it locally:
 
 ```bash
 kubectl port-forward svc/grafana 3000:80
+# open http://localhost:3000  (admin / admin)
 ```
 
-Then open `http://localhost:3000` in your browser and log in with `admin` / `admin`.
+Dashboards include vLLM request metrics (queue depth, KV cache utilization, throughput, latency) and DCGM GPU hardware metrics.
 
-The vLLM dashboard is pre-loaded under **Dashboards → vLLM Server (Qwen2.5-7B + SQL LoRA)** and includes the following panels:
-- Running & waiting requests (queue depth)
-- GPU KV cache utilization
-- Tokens generated per second
-- Time to first token (ms)
-- Request throughput (req/s)
-- Inter-token latency (ms)
+Metrics are scraped from Triton's metrics port (8002) by PodMonitoring and stored in Google Cloud Monitoring.
 
-### SOP: Google Cloud Monitoring Authentication for Grafana
+## CI/CD
 
-Grafana reads metrics from Google Cloud Monitoring using the GKE node's default service account via Application Default Credentials. For this to work, the node service account must be granted the `roles/monitoring.viewer` IAM role on the project. To configure this, first retrieve your project number by running `gcloud projects describe <project-id> --format="value(projectNumber)"`. The node service account email follows the format `<project-number>-compute@developer.gserviceaccount.com`. Grant the role by running:
+GitHub Actions runs on every push to `main`:
+1. `kubeconform` schema validation
+2. Server-side dry run against the live GKE cluster
+3. `kubectl apply -k` deploy
 
-```bash
-gcloud projects add-iam-policy-binding <project-id> \
-  --member="serviceAccount:<project-number>-compute@developer.gserviceaccount.com" \
-  --role="roles/monitoring.viewer"
-```
-
-Once granted, restart the Grafana pod with `kubectl rollout restart deployment/grafana` and verify the connection by navigating to **Connections → Data Sources → Google Cloud Monitoring → Save & Test** in the Grafana UI — a green checkmark confirms the authentication is working correctly. Note that IAM changes may take up to 60 seconds to propagate before the test succeeds.
-
-## Engineering Standards
-- **GitOps**: Use Kustomize (`kubectl apply -k`) for all deployments.
-- **Validation**: Use `kubeconform` and `kubectl apply --server-dry-run` for pre-push testing.
-- **Code Style**: Functional programming preferred; No default exports.
-- **Documentation**: All public APIs must have TSDoc comments.
-- **Testing**: Vitest for unit and integration tests.
-
-## Further Reading
-- [GCP Infrastructure Setup](./docs/GCP_INFRA.md)
+Authentication uses Workload Identity Federation — no long-lived credentials stored in GitHub.

@@ -1,0 +1,35 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Inherit shared resources from base:
+#   service.yaml       (LoadBalancer port 80 → 8000, compatible with Triton HTTP)
+#   monitoring.yaml    (PodMonitoring — update scrape path to /metrics for Triton)
+#   secret.env         (HF_TOKEN)
+#   grafana/           (dashboards — Triton metrics need new panels)
+resources:
+  - ../../base
+
+# Replace the vLLM deployment with the Triton deployment (same resource name).
+patches:
+  - path: deployment.yaml
+    target:
+      kind: Deployment
+      name: llm-adaptive-router
+
+# Build a ConfigMap from the BLS model.py so the init container can copy it in.
+# The file is read from the repo at kustomize build time.
+configMapGenerator:
+  - name: router-bls-model
+    files:
+      - model.py=../../../triton/models/router_bls/1/model.py
+  - name: intent-classifier-model
+    files:
+      - model.py=../../../triton/models/intent_classifier/1/model.py
+  - name: model-setup-script
+    files:
+      - model-setup.sh=../../../triton/scripts/model-setup.sh
+
+# Append "-triton" suffix to all generated ConfigMap names to avoid collisions
+# with any existing base ConfigMaps.
+generatorOptions:
+  disableNameSuffixHash: false

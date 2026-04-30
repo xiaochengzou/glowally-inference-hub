@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-adaptive-router          # same name as base — Kustomize patch replaces it
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: llm-adaptive-router
+  template:
+    metadata:
+      labels:
+        app: llm-adaptive-router
+    spec:
+      # -------------------------------------------------------------------- #
+      # Init container: downloads LoRA adapters + exports ONNX classifier
+      # + writes model repository config files into /data/models/
+      # -------------------------------------------------------------------- #
+      initContainers:
+      - name: lora-downloader
+        $patch: delete
+      - name: model-setup
+        image: python:3.11-slim
+        env:
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token-secret
+              key: hf_token
+        - name: INTENT_CLASSIFIER_MODEL
+          value: "xczou/distilbert-intent-sql-creative-general"
+        command: ["/bin/bash", "/scripts/model-setup.sh"]
+        volumeMounts:
+        - name: model-storage
+          mountPath: /data
+        - name: model-setup-script
+          mountPath: /scripts
+          readOnly: true
+        - name: bls-source
+          mountPath: /repo/triton/models/router_bls/1
+          readOnly: true
+        - name: intent-classifier-source
+          mountPath: /repo/triton/models/intent_classifier/1
+          readOnly: true
+
+      # -------------------------------------------------------------------- #
+      # Main container: Triton Inference Server with vLLM backend
+      # -------------------------------------------------------------------- #
+      containers:
+      - name: vllm-engine
+        $patch: delete
+      - name: triton-server
+        image: nvcr.io/nvidia/tritonserver:24.09-vllm-python-py3
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            pip install onnxruntime-gpu --quiet
+            exec tritonserver \
+              --model-repository=/data/models \
+              --log-verbose=1 \
+              --http-port=8000 \
+              --grpc-port=8001 \
+              --metrics-port=8002
+        env:
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token-secret
+              key: hf_token
+        ports:
+        - name: http
+          containerPort: 8000
+        - name: grpc
+          containerPort: 8001
+        - name: metrics
+          containerPort: 8002
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+            cpu: "4"
+            memory: "16Gi"
+          requests:
+            nvidia.com/gpu: 1
+            cpu: "4"
+            memory: "16Gi"
+        volumeMounts:
+        - name: model-storage
+          mountPath: /data
+        readinessProbe:
+          httpGet:
+            path: /v2/health/ready
+            port: 8000
+          initialDelaySeconds: 120   # vLLM load takes 2-3 min
+          periodSeconds: 10
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /v2/health/live
+            port: 8000
+          initialDelaySeconds: 180
+          periodSeconds: 30
+
+      # -------------------------------------------------------------------- #
+      # Volumes
+      # -------------------------------------------------------------------- #
+      volumes:
+      - name: lora-storage
+        $patch: delete
+      - name: model-storage
+        emptyDir: {}
+      - name: model-setup-script
+        configMap:
+          name: model-setup-script
+          defaultMode: 0755
+      - name: bls-source
+        configMap:
+          name: router-bls-model
+      - name: intent-classifier-source
+        configMap:
+          name: intent-classifier-model
+
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"

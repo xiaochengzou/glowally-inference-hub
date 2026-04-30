@@ -1,0 +1,8 @@
+# model.onnx is downloaded here at runtime by the init container.
+# To produce it, fine-tune DistilBERT on intent examples and export:
+#
+#   from optimum.exporters.onnx import main_export
+#   main_export("./fine-tuned-distilbert", output="./1", task="text-classification")
+#
+# For a dev/test stub (no fine-tuning), the init container exports base DistilBERT.
+# Replace with a fine-tuned checkpoint before running production traffic.

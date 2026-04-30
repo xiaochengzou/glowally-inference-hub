@@ -29,3 +29,5 @@ yarn-error.log*
 *.swp
 *.swo
 k8s/base/secret.env
+
+.venv

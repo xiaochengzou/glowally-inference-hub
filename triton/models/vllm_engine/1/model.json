@@ -1,0 +1,13 @@
+{
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "gpu_memory_utilization": 0.65,
+    "max_model_len": 3072,
+    "enforce_eager": true,
+    "enable_lora": true,
+    "max_loras": 2,
+    "max_lora_rank": 16,
+    "lora_modules": [
+        {"name": "sql-expert", "path": "/data/sql-lora"},
+        {"name": "creative",   "path": "/data/creative-lora"}
+    ]
+}

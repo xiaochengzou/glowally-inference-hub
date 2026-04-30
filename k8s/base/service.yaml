@@ -1,12 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: vllm-lb-service
+  name: llm-adaptive-router-service
 spec:
   selector:
-    app: vllm-server
+    app: llm-adaptive-router
   ports:
-  - protocol: TCP
+  - name: http
+    protocol: TCP
     port: 80
     targetPort: 8000
+  - name: grpc
+    protocol: TCP
+    port: 8001
+    targetPort: 8001
   type: LoadBalancer

@@ -12,7 +12,7 @@ The primary goal is to showcase the integration of modern LLM serving engines wi
 - **Hardware**: NVIDIA L4 GPU (24GB VRAM)
 - **Monitoring**: Google Cloud Monitoring + Grafana
 - **CI/CD & GitOps**: GitHub Actions + Workload Identity Federation (WIF) + Kustomize
-- **Tooling & Services**: TypeScript, Vitest, kubeconform
+
 
 ## Project Structure
 ```
@@ -55,7 +55,7 @@ To ensure stability on the 24GB L4 GPU, the following parameters are mandatory:
 - `--enforce-eager`: Bypasses the 5+ minute CUDA Graph warmup crash.
 - `--gpu-memory-utilization 0.7`: Provides a VRAM safety buffer.
 - `--enable-lora`: Enabled for multi-tenant adapter support.
-- `--max-loras 1`: Initial limit to prevent OOM.
+- `--max-loras 2`: Initial limit to prevent OOM.
 - **Deployment Strategy**: Use `type: Recreate` to ensure the GPU is fully freed before rescheduling.
 
 ### Key Paths & Troubleshooting
@@ -65,7 +65,7 @@ To ensure stability on the 24GB L4 GPU, the following parameters are mandatory:
 ## Maintenance Operations
 - **Scale Up**: `kubectl scale deployment vllm-server --replicas=1`
 - **Scale Down**: `kubectl scale deployment vllm-server --replicas=0` (Stops billing while preserving state)
-- **Verify Models**: `curl http://[LB_IP]/v1/models | jq .`
+
 
 ## Monitoring & Grafana
 
@@ -105,5 +105,5 @@ Once granted, restart the Grafana pod with `kubectl rollout restart deployment/g
 - **Documentation**: All public APIs must have TSDoc comments.
 - **Testing**: Vitest for unit and integration tests.
 
-## Further Reading
-- [GCP Infrastructure Setup](./docs/GCP_INFRA.md)
+## Demo
+See the demo video: https://youtu.be/SyWKyRRpFWQ

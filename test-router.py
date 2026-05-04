@@ -25,9 +25,9 @@ SERVICE_NAME = "llm-adaptive-router-service"
 MAX_TOKENS   = 150
 
 PROMPTS = [
-    ("SQL",      "Table 'users' has columns: id, name, email, created_at. Write a query to find all users created in the last 30 days."),
-    ("CREATIVE", "Write a two-sentence cyberpunk scene set in a flooded megacity."),
-    ("GENERAL",  "What is the difference between a process and a thread?"),
+    ("SQL",       "Table 'users' has columns: id, name, email, created_at. Write a query to find all users created in the last 30 days."),
+    ("FINANCIAL", "What is the price-to-earnings ratio and how should I use it to evaluate a stock?"),
+    ("GENERAL",   "What is the difference between a process and a thread?"),
 ]
 
 

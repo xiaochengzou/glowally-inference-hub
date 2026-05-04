@@ -1,4 +1,4 @@
-# vLLM backend — hosts Qwen2.5-7B-Instruct with sql-expert and creative LoRA adapters.
+# vLLM backend — hosts Qwen2.5-7B-Instruct with sql-expert and financial LoRA adapters.
 # Decoupled mode required for token streaming.
 # Engine parameters are in 1/model.json.
 

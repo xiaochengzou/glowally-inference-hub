@@ -1,4 +1,4 @@
-# Intent classifier — DistilBERT fine-tuned for 3 classes: GENERAL, SQL, CREATIVE
+# Intent classifier — DistilBERT fine-tuned for 3 classes: GENERAL, SQL, FINANCIAL
 # Backend: ONNX Runtime (GPU instance for <15ms latency SLO)
 # model.onnx is downloaded at pod startup by the init container
 
@@ -23,7 +23,7 @@ output [
   {
     name: "logits"
     data_type: TYPE_FP32
-    dims: [ 3 ]    # [GENERAL, SQL, CREATIVE]
+    dims: [ 3 ]    # [GENERAL, SQL, FINANCIAL]
   }
 ]
 

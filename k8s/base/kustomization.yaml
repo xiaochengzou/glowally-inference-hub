@@ -8,6 +8,7 @@ resources:
   - monitoring.yaml
   # Grafana
   - grafana/deployment.yaml
+  - grafana/service.yaml
   # KEDA — uncomment to enable auto-scaling
   # - keda/scaled-object.yaml
 

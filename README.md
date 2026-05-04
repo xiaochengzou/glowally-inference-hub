@@ -2,7 +2,7 @@
 
 ## Overview
 
-Glowally Inference Hub is a production-ready AI inference platform on **GKE Autopilot** that demonstrates **intelligent request routing** for LLM serving. The system classifies incoming prompts by intent and automatically routes each request to the most appropriate model — a SQL LoRA adapter, a creative writing LoRA adapter, or the base model — all on a single **NVIDIA L4 GPU (24GB VRAM)**.
+Glowally Inference Hub is a production-ready AI inference platform on **GKE Autopilot** that demonstrates **intelligent request routing** for LLM serving. The system classifies incoming prompts by intent and automatically routes each request to the most appropriate model — a SQL LoRA adapter, a financial domain LoRA adapter, or the base model — all on a single **NVIDIA L4 GPU (24GB VRAM)**.
 
 The core innovation is the **server-side routing pipeline**: the client sends only a prompt, with no knowledge of which model or adapter handles it. A lightweight DistilBERT classifier (running on CPU) detects the intent and selects the adapter before the request reaches vLLM.
 
@@ -15,22 +15,34 @@ Client (HTTP or gRPC)
   router_bls (BLS)          ← Triton Python backend, synchronous
         │
         ├─ intent_classifier (DistilBERT ONNX, CPU)
-        │       classifies prompt → SQL / CREATIVE / GENERAL
+        │       classifies prompt → SQL / FINANCIAL / GENERAL
         │
         └─ vllm_engine (vLLM backend, GPU)
                 routes to:
                   sql-expert LoRA    (vindows/qwen2.5-7b-text-to-sql)
-                  creative LoRA      (miarick/Qwen2.5-7B-Instruct-cyberpunk-literary-lora)
+                  financial LoRA     (xczou/qwen2.5-7b-financial-lora)
                   base model         (Qwen/Qwen2.5-7B-Instruct)
 ```
 
 ### Intent Classifier
 
-The DistilBERT classifier is a fine-tuned 3-class model trained to distinguish SQL, creative writing, and general prompts.
+The DistilBERT classifier is a fine-tuned 3-class model trained to distinguish SQL, financial, and general prompts.
 
-- **Training notebook**: [Google Colab](https://colab.research.google.com/drive/1TBD8sqfuCPqfo2kTNV9MP0veaiHUx9Qv)
-- **Published model**: [xczou/distilbert-intent-sql-creative-general](https://huggingface.co/xczou/distilbert-intent-sql-creative-general) on HuggingFace
+- **Training notebook**: [Google Colab](https://colab.research.google.com/drive/1TBD8sqfuCPqfo2kTNV9MP0veaiHUx9Qv#scrollTo=05nRL5Ag9VPd)
+- **Published model**: [xczou/distilbert-intent-sql-financial-general](https://huggingface.co/xczou/distilbert-intent-sql-financial-general) on HuggingFace
 - Exported to ONNX at pod startup and served on CPU via `onnxruntime`, keeping the full GPU free for vLLM
+
+### Financial LoRA Adapter
+
+The financial adapter is a self-trained LoRA fine-tune of Qwen2.5-7B-Instruct, specialising in investment concepts, financial analysis, and personal finance.
+
+- **Published model**: [xczou/qwen2.5-7b-financial-lora](https://huggingface.co/xczou/qwen2.5-7b-financial-lora) on HuggingFace
+- **Training dataset**: [FinLang/investopedia-instruction-tuning-dataset](https://huggingface.co/datasets/FinLang/investopedia-instruction-tuning-dataset) — 206,000 financial Q&A examples covering stocks, bonds, ETFs, derivatives, retirement accounts, and macroeconomics
+- **Training hardware**: Kaggle T4 GPU, 1 epoch, QLoRA (4-bit NF4), ~24 hours
+- **LoRA rank**: 16 — targets all attention and feed-forward projection layers (`q/k/v/o_proj`, `gate/up/down_proj`)
+- **Evaluation**: perplexity reduced from 84.80 → 3.33 (96% improvement); BERTScore F1 0.837 → 0.899
+
+> Note: the adapter reflects Investopedia's editorial style and is not suitable for real-time market data or live trading decisions.
 
 ### Serving Stack
 
@@ -102,9 +114,27 @@ make triton-start    # scale to 1 replica
 make triton-stop     # scale to 0 — stops GPU billing
 ```
 
+### Teardown
+
+To delete all cluster resources (deployments, services, ConfigMaps, secrets, KEDA):
+
+```bash
+make teardown
+```
+
+The script prompts for confirmation before deleting anything. The GKE cluster itself is not affected.
+
+To recreate everything after a teardown, run `make triton-deploy` again. The only local file required is `k8s/base/secret.env` — it is never committed or deleted by the teardown script.
+
+KEDA is not recreated by `make triton-deploy` (it is installed by the CI/CD pipeline). To reinstall it manually:
+
+```bash
+helm upgrade --install keda kedacore/keda --namespace keda --create-namespace
+```
+
 ## Testing
 
-Please see the demo video here: https://youtu.be/8Wq1t6XmSsw
+Please see the demo video here: https://youtu.be/fqAHgVi3_0U
 
 ### End-to-end routing test
 
@@ -114,7 +144,7 @@ python test-router.py           # gRPC (default)
 python test-router.py --http    # HTTP
 ```
 
-Sends three prompts (SQL, creative, general) to `router_bls`. The client specifies only the prompt — no model name, no adapter name. The server classifies the intent and selects the adapter automatically.
+Sends three prompts (SQL, financial, general) to `router_bls`. The client specifies only the prompt — no model name, no adapter name. The server classifies the intent and selects the adapter automatically.
 
 ## Monitoring & Grafana
 

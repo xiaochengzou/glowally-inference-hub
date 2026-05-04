@@ -11,7 +11,7 @@ from huggingface_hub import snapshot_download
 token = os.environ.get('HF_TOKEN')
 for repo_id, local_dir in [
     ('vindows/qwen2.5-7b-text-to-sql', '/data/sql-lora'),
-    ('miarick/Qwen2.5-7B-Instruct-cyberpunk-literary-lora', '/data/creative-lora'),
+    ('xczou/qwen2.5-7b-financial-lora', '/data/financial-lora'),
 ]:
     print(f'Downloading {repo_id} ...')
     snapshot_download(repo_id=repo_id, local_dir=local_dir, token=token)
@@ -23,7 +23,7 @@ echo "=== [2b/5] Remove tokenizer files from LoRA adapter directories ==="
 # The Qwen2.5 tokenizer.json in these adapters triggers a Rust parse error that
 # crashes the async engine loop. Removing these files causes vLLM to fall back
 # to the base model tokenizer via the OSError path in get_lora_tokenizer().
-for dir in /data/sql-lora /data/creative-lora; do
+for dir in /data/sql-lora /data/financial-lora; do
     rm -f "$dir/tokenizer.json" "$dir/tokenizer_config.json" \
           "$dir/vocab.json" "$dir/merges.txt" \
           "$dir/special_tokens_map.json" "$dir/added_tokens.json"
@@ -110,7 +110,7 @@ JSON
 cat > /data/models/vllm_engine/1/multi_lora.json << 'JSON'
 {
   "sql-expert": "/data/sql-lora",
-  "creative":   "/data/creative-lora"
+  "financial":  "/data/financial-lora"
 }
 JSON
 

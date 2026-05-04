@@ -30,7 +30,7 @@ spec:
               name: hf-token-secret
               key: hf_token
         - name: INTENT_CLASSIFIER_MODEL
-          value: "xczou/distilbert-intent-sql-creative-general"
+          value: "xczou/distilbert-intent-sql-financial-general"
         command: ["/bin/bash", "/scripts/model-setup.sh"]
         volumeMounts:
         - name: model-storage

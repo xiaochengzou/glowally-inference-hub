@@ -1,5 +1,5 @@
 {
-  "title": "vLLM Server (Qwen2.5-7B + SQL LoRA)",
+  "title": "Triton Inference Server (Qwen2.5-7B + LoRA Adapters)",
   "uid": "vllm-overview",
   "refresh": "30s",
   "schemaVersion": 36,
@@ -7,285 +7,267 @@
   "panels": [
     {
       "id": 1,
-      "title": "Running Requests",
+      "title": "Pending Requests (vLLM Engine)",
       "type": "stat",
-      "datasource": {
-        "type": "stackdriver",
-        "uid": "P53B7819E0F26D6F4"
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 0,
-        "w": 6,
-        "h": 4
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "stackdriver",
-            "uid": "P53B7819E0F26D6F4"
-          },
-          "queryType": "timeSeriesList",
-          "timeSeriesList": {
-            "projectName": "glowally-vllm",
-            "crossSeriesReducer": "REDUCE_NONE",
-            "alignmentPeriod": "cloud-monitoring-auto",
-            "perSeriesAligner": "ALIGN_MEAN",
-            "groupBys": [],
-            "filters": [
-              "metric.type",
-              "=",
-              "prometheus.googleapis.com/vllm:num_requests_running/gauge"
-            ],
-            "preprocessor": "none",
-            "view": "FULL"
-          }
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_MEAN",
+          "groupBys": [],
+          "filters": [
+            "metric.type", "=", "prometheus.googleapis.com/nv_inference_pending_request_count/gauge",
+            "AND", "metric.labels.model", "=", "vllm_engine"
+          ],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ]
+      }]
     },
     {
       "id": 2,
-      "title": "Waiting Requests (Queue Depth)",
+      "title": "Request Throughput (req/s)",
       "type": "stat",
-      "datasource": {
-        "type": "stackdriver",
-        "uid": "P53B7819E0F26D6F4"
-      },
-      "gridPos": {
-        "x": 6,
-        "y": 0,
-        "w": 6,
-        "h": 4
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "stackdriver",
-            "uid": "P53B7819E0F26D6F4"
-          },
-          "queryType": "timeSeriesList",
-          "timeSeriesList": {
-            "projectName": "glowally-vllm",
-            "crossSeriesReducer": "REDUCE_NONE",
-            "alignmentPeriod": "cloud-monitoring-auto",
-            "perSeriesAligner": "ALIGN_MEAN",
-            "groupBys": [],
-            "filters": [
-              "metric.type",
-              "=",
-              "prometheus.googleapis.com/vllm:num_requests_waiting/gauge"
-            ],
-            "preprocessor": "none",
-            "view": "FULL"
-          }
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_RATE",
+          "groupBys": [],
+          "filters": [
+            "metric.type", "=", "prometheus.googleapis.com/nv_inference_request_success/counter",
+            "AND", "metric.labels.model", "=", "router_bls"
+          ],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ]
+      }]
     },
     {
       "id": 3,
-      "title": "GPU KV Cache Utilization",
-      "type": "gauge",
-      "datasource": {
-        "type": "stackdriver",
-        "uid": "P53B7819E0F26D6F4"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 0,
-        "w": 6,
-        "h": 4
-      },
+      "title": "GPU Memory Used",
+      "type": "stat",
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
       "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
-        },
-        "minVizValue": 0,
-        "maxVizValue": 1
+        "reduceOptions": { "calcs": ["lastNotNull"] }
       },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "stackdriver",
-            "uid": "P53B7819E0F26D6F4"
-          },
-          "queryType": "timeSeriesList",
-          "timeSeriesList": {
-            "projectName": "glowally-vllm",
-            "crossSeriesReducer": "REDUCE_NONE",
-            "alignmentPeriod": "cloud-monitoring-auto",
-            "perSeriesAligner": "ALIGN_MEAN",
-            "groupBys": [],
-            "filters": [
-              "metric.type",
-              "=",
-              "prometheus.googleapis.com/vllm:kv_cache_usage_perc/gauge"
-            ],
-            "preprocessor": "none",
-            "view": "FULL"
-          }
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_MEAN",
+          "groupBys": [],
+          "filters": [
+            "metric.type", "=", "prometheus.googleapis.com/nv_gpu_memory_used_bytes/gauge"
+          ],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ]
+      }]
     },
     {
       "id": 4,
-      "title": "Tokens Generated per Second",
-      "type": "timeseries",
-      "datasource": {
-        "type": "stackdriver",
-        "uid": "P53B7819E0F26D6F4"
+      "title": "GPU Power (W)",
+      "type": "stat",
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] }
       },
-      "gridPos": {
-        "x": 0,
-        "y": 4,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "stackdriver",
-            "uid": "P53B7819E0F26D6F4"
-          },
-          "queryType": "timeSeriesList",
-          "timeSeriesList": {
-            "projectName": "glowally-vllm",
-            "crossSeriesReducer": "REDUCE_NONE",
-            "alignmentPeriod": "cloud-monitoring-auto",
-            "perSeriesAligner": "ALIGN_RATE",
-            "groupBys": [],
-            "filters": [
-              "metric.type",
-              "=",
-              "prometheus.googleapis.com/vllm:generation_tokens_total/counter"
-            ],
-            "preprocessor": "none",
-            "view": "FULL"
-          }
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_MEAN",
+          "groupBys": [],
+          "filters": [
+            "metric.type", "=", "prometheus.googleapis.com/nv_gpu_power_usage/gauge"
+          ],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ]
+      }]
     },
     {
       "id": 5,
-      "title": "Time to First Token (ms)",
+      "title": "Request Rate by Model (req/s)",
       "type": "timeseries",
-      "datasource": {
-        "type": "stackdriver",
-        "uid": "P53B7819E0F26D6F4"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 4,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "stackdriver",
-            "uid": "P53B7819E0F26D6F4"
-          },
-          "queryType": "timeSeriesList",
-          "timeSeriesList": {
-            "projectName": "glowally-vllm",
-            "crossSeriesReducer": "REDUCE_NONE",
-            "alignmentPeriod": "cloud-monitoring-auto",
-            "perSeriesAligner": "ALIGN_DELTA",
-            "groupBys": [],
-            "filters": [
-              "metric.type",
-              "=",
-              "prometheus.googleapis.com/vllm:time_to_first_token_seconds/histogram"
-            ],
-            "preprocessor": "none",
-            "view": "FULL"
-          }
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_RATE",
+          "groupBys": [],
+          "filters": [
+            "metric.type", "=", "prometheus.googleapis.com/nv_inference_request_success/counter"
+          ],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ]
+      }]
     },
     {
       "id": 6,
-      "title": "Request Throughput (req/s)",
+      "title": "Failed Requests by Model (req/s)",
       "type": "timeseries",
-      "datasource": {
-        "type": "stackdriver",
-        "uid": "P53B7819E0F26D6F4"
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 12,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "stackdriver",
-            "uid": "P53B7819E0F26D6F4"
-          },
-          "queryType": "timeSeriesList",
-          "timeSeriesList": {
-            "projectName": "glowally-vllm",
-            "crossSeriesReducer": "REDUCE_NONE",
-            "alignmentPeriod": "cloud-monitoring-auto",
-            "perSeriesAligner": "ALIGN_RATE",
-            "groupBys": [],
-            "filters": [
-              "metric.type",
-              "=",
-              "prometheus.googleapis.com/vllm:request_success_total/counter"
-            ],
-            "preprocessor": "none",
-            "view": "FULL"
-          }
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_RATE",
+          "groupBys": [],
+          "filters": [
+            "metric.type", "=", "prometheus.googleapis.com/nv_inference_request_failure/counter"
+          ],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ]
+      }]
     },
     {
       "id": 7,
-      "title": "Inter-Token Latency (ms)",
+      "title": "End-to-End Request Duration Rate (µs/s)",
+      "description": "Rate of cumulative request duration — higher = longer latency or higher load. Covers full round-trip through router_bls including classification and LLM inference.",
       "type": "timeseries",
-      "datasource": {
-        "type": "stackdriver",
-        "uid": "P53B7819E0F26D6F4"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 12,
-        "w": 12,
-        "h": 8
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "stackdriver",
-            "uid": "P53B7819E0F26D6F4"
-          },
-          "queryType": "timeSeriesList",
-          "timeSeriesList": {
-            "projectName": "glowally-vllm",
-            "crossSeriesReducer": "REDUCE_NONE",
-            "alignmentPeriod": "cloud-monitoring-auto",
-            "perSeriesAligner": "ALIGN_DELTA",
-            "groupBys": [],
-            "filters": [
-              "metric.type",
-              "=",
-              "prometheus.googleapis.com/vllm:request_time_per_output_token_seconds/histogram"
-            ],
-            "preprocessor": "none",
-            "view": "FULL"
-          }
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_RATE",
+          "groupBys": [],
+          "filters": [
+            "metric.type", "=", "prometheus.googleapis.com/nv_inference_request_duration_us/counter"
+          ],
+          "preprocessor": "none",
+          "view": "FULL"
         }
-      ]
+      }]
+    },
+    {
+      "id": 8,
+      "title": "Queue Wait Duration Rate by Model (µs/s)",
+      "description": "Rate of time requests spend waiting in the queue before execution. Sustained growth indicates the model is saturated.",
+      "type": "timeseries",
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_RATE",
+          "groupBys": [],
+          "filters": [
+            "metric.type", "=", "prometheus.googleapis.com/nv_inference_queue_duration_us/counter"
+          ],
+          "preprocessor": "none",
+          "view": "FULL"
+        }
+      }]
+    },
+    {
+      "id": 9,
+      "title": "GPU Utilization",
+      "type": "timeseries",
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        }
+      },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_MEAN",
+          "groupBys": [],
+          "filters": [
+            "metric.type", "=", "prometheus.googleapis.com/nv_gpu_utilization/gauge"
+          ],
+          "preprocessor": "none",
+          "view": "FULL"
+        }
+      }]
+    },
+    {
+      "id": 10,
+      "title": "CPU Utilization",
+      "type": "timeseries",
+      "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        }
+      },
+      "targets": [{
+        "refId": "A",
+        "datasource": { "type": "stackdriver", "uid": "P53B7819E0F26D6F4" },
+        "queryType": "timeSeriesList",
+        "timeSeriesList": {
+          "projectName": "glowally-vllm",
+          "crossSeriesReducer": "REDUCE_NONE",
+          "alignmentPeriod": "cloud-monitoring-auto",
+          "perSeriesAligner": "ALIGN_MEAN",
+          "groupBys": [],
+          "filters": [
+            "metric.type", "=", "prometheus.googleapis.com/nv_cpu_utilization/gauge"
+          ],
+          "preprocessor": "none",
+          "view": "FULL"
+        }
+      }]
     }
   ]
 }

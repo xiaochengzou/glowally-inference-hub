@@ -18,12 +18,12 @@ import triton_python_backend_utils as pb_utils
 # --------------------------------------------------------------------------- #
 # Intent routing table
 # --------------------------------------------------------------------------- #
-INTENT_LABELS = ["GENERAL", "SQL", "CREATIVE"]
+INTENT_LABELS = ["GENERAL", "SQL", "FINANCIAL"]
 
 _LORA_FOR_INTENT = {
-    "SQL":      "sql-expert",
-    "CREATIVE": "creative",
-    "GENERAL":  None,   # base model, no LoRA adapter
+    "SQL":       "sql-expert",
+    "FINANCIAL": "financial",
+    "GENERAL":   None,   # base model, no LoRA adapter
 }
 
 _DEFAULT_MAX_TOKENS  = 512

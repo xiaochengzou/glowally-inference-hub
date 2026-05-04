@@ -58,7 +58,7 @@ spec:
             token = os.environ.get('HF_TOKEN')
             adapters = [
                 ('vindows/qwen2.5-7b-text-to-sql', '/data/sql-lora'),
-                ('miarick/Qwen2.5-7B-Instruct-cyberpunk-literary-lora', '/data/creative-lora'),
+                ('xczou/qwen2.5-7b-financial-lora', '/data/financial-lora'),
             ]
 
             for repo_id, local_dir in adapters:
@@ -87,7 +87,7 @@ spec:
           "--gpu-memory-utilization", "0.7", # Lowered to provide VRAM for adapters
           "--max-model-len", "3072",
           "--enable-lora", # Required for multi-adapter support
-          "--lora-modules", "sql-expert=/data/sql-lora", "creative=/data/creative-lora",
+          "--lora-modules", "sql-expert=/data/sql-lora", "financial=/data/financial-lora",
           "--max-loras", "2",
           "--max-lora-rank", "16",
           "--enforce-eager"

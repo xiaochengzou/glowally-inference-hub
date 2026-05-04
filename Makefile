@@ -1,5 +1,6 @@
 .PHONY: help validate dry-run deploy check start stop logs \
-        triton-validate triton-dry-run triton-check triton-deploy triton-start triton-stop triton-logs triton-status
+        triton-validate triton-dry-run triton-check triton-deploy triton-start triton-stop triton-logs triton-status \
+        teardown
 
 # Default target — show help
 help:
@@ -26,6 +27,9 @@ help:
 	@echo "    make triton-stop     Scale down Triton server (stops GPU billing)"
 	@echo "    make triton-logs     Stream Triton server logs"
 	@echo "    make triton-status   Show Triton pod status"
+	@echo ""
+	@echo "  Teardown"
+	@echo "    make teardown        Delete ALL cluster resources (prompts for confirmation)"
 	@echo ""
 	@echo "  Debugging"
 	@echo "    make logs-vllm       Stream vLLM server logs"
@@ -142,3 +146,8 @@ logs-grafana:
 
 status:
 	kubectl get pods
+
+# ── Teardown ──────────────────────────────────────────────────────────────────
+
+teardown:
+	@bash teardown.sh

@@ -1,9 +1,26 @@
 # Glowally Inference Hub
 
 ## Overview
-Glowally Inference Hub is a cost-efficient, multi-tenant AI inference platform hosted on **GKE Autopilot**. It serves as a comprehensive demonstration of a production-ready infrastructure setup for **AI Inference Engineering**. The system utilizes **vLLM** to serve specialized **LoRA adapters** (starting with Text-to-SQL) alongside a base **Qwen 2.5 7B** model on a single **NVIDIA L4 GPU (24GB VRAM)**.
+Glowally Inference Hub is a cost-efficient, multi-tenant AI inference platform hosted on **GKE Autopilot**. It serves as a comprehensive demonstration of a production-ready infrastructure setup for **AI Inference Engineering**. The system utilizes **vLLM** to serve multiple specialized **LoRA adapters** (Text-to-SQL and cyberpunk creative writing) alongside a base **Qwen 2.5 7B** model on a single **NVIDIA L4 GPU (24GB VRAM)**.
 
 The primary goal is to showcase the integration of modern LLM serving engines with cloud-native orchestration, providing a blueprint for scalable and maintainable AI inference systems.
+
+## LoRA Adapters
+
+Two adapters are served alongside the base model, each mounted at a named endpoint:
+
+| Adapter name | HuggingFace model | Domain |
+|---|---|---|
+| `sql-expert` | [vindows/qwen2.5-7b-text-to-sql](https://huggingface.co/vindows/qwen2.5-7b-text-to-sql) | Text-to-SQL generation |
+| `creative` | [miarick/Qwen2.5-7B-Instruct-cyberpunk-literary-lora](https://huggingface.co/miarick/Qwen2.5-7B-Instruct-cyberpunk-literary-lora) | Cyberpunk-style creative writing |
+
+Clients select an adapter by passing `"model": "<adapter-name>"` in the OpenAI-compatible request. Requests that omit the model field are served by the base **Qwen2.5-7B-Instruct**.
+
+## Demo
+
+The video demonstrates the full production deployment on Google Cloud: three prompts targeting the `sql-expert`, `creative`, and base model endpoints are sent to the server with the adapter specified per request. The Grafana dashboard shows live GPU hardware and vLLM application metrics.
+
+[![Watch the demo](https://img.youtube.com/vi/SyWKyRRpFWQ/hqdefault.jpg)](https://youtu.be/SyWKyRRpFWQ)
 
 ## Technical Stack
 - **Serving Engine**: vLLM (v0.19.0+)
@@ -105,5 +122,3 @@ Once granted, restart the Grafana pod with `kubectl rollout restart deployment/g
 - **Documentation**: All public APIs must have TSDoc comments.
 - **Testing**: Vitest for unit and integration tests.
 
-## Demo
-See the demo video: https://youtu.be/SyWKyRRpFWQ

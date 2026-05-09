@@ -54,6 +54,12 @@ The financial adapter is a self-trained LoRA fine-tune of Qwen2.5-7B-Instruct, s
 | **DistilBERT (ONNX)** | Intent classifier — CPU only |
 | **router_bls** | BLS orchestration layer — classifies then routes |
 
+## Demo
+
+The video demonstrates the full production deployment on Google Cloud: three prompts (SQL, financial, and general) are sent to the server with no model specified. Live Grafana dashboards show real-time metrics while backend logs confirm each prompt is correctly classified on the fly and dispatched to the right LoRA adapter — all transparently from the client's perspective.
+
+[![Watch the demo](https://img.youtube.com/vi/fqAHgVi3_0U/hqdefault.jpg)](https://youtu.be/fqAHgVi3_0U)
+
 ## Technical Stack
 
 - **Inference Server**: NVIDIA Triton Inference Server 24.09 (vLLM backend)
@@ -133,8 +139,6 @@ helm upgrade --install keda kedacore/keda --namespace keda --create-namespace
 ```
 
 ## Testing
-
-Please see the demo video here: https://youtu.be/fqAHgVi3_0U
 
 ### End-to-end routing test
 
